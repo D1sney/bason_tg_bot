@@ -1,17 +1,8 @@
 import aiohttp
 import os
 import json
-from dotenv import load_dotenv
 import asyncio
-
-# Загружаем переменные окружения
-load_dotenv()
-API_URL = os.getenv("API_URL")
-AUTH_API_URL = os.getenv("AUTH_API_URL")
-LOGIN_DATA = {
-    "login": os.getenv("API_LOGIN"),
-    "password": os.getenv("API_PASSWORD")
-}
+from config import API_URL, AUTH_API_URL, LOGIN_DATA
 
 access_token = None
 refresh_token = None
@@ -50,7 +41,8 @@ async def authenticate():
                 refresh_token = data["RT"]
                 save_tokens(access_token, refresh_token)  # Сохраняем токены в файл
             elif data.get("error") == "need_captcha":
-                raise Exception("Ошибка аутентификации: требуется пройти капчу")
+                # raise Exception("Ошибка аутентификации: требуется пройти капчу")
+                print(data)
             else:
                 raise Exception(f"Ошибка аутентификации: {data.get('error')}")
 
@@ -94,19 +86,20 @@ async def fetch_item_details(item_id: int):
                     return await retry_response.json() if retry_response.status == 200 else None
             return await response.json() if response.status == 200 else None
 
-async def get_item_info(article: str):
+async def get_item_info(item_id: int):
     """Получает информацию о товаре и извлекает нужные данные."""
-    data = await fetch_item_details(article)
+    data = await fetch_item_details(item_id)
     if data:
         return {
             "photo_url": data.get("photo_url"),
-            "article": data.get("article"),
+            "item_id": data.get("item_id"),
             "section": data.get("section"),
         }
     return None
 
-async def send_to_warehouse_chat(bot, warehouse_chat_id: int, item_info: dict, action: str):
+async def send_to_warehouse_chat(bot, warehouse_chat_id: int, item_id: int, action: str):
     """Отправляет информацию о товаре в складской чат."""
+    item_info = get_item_info(item_id)
     if item_info:
         message_text = (f"Запрос: {action}\n"
                         f"Артикул: {item_info['article']}\n"
@@ -116,14 +109,14 @@ async def send_to_warehouse_chat(bot, warehouse_chat_id: int, item_info: dict, a
         await bot.send_message(warehouse_chat_id, "Ошибка: не удалось получить информацию о товаре.")
 
 
-async def main():
+# async def main():
     
-    await authenticate()
-    print(await fetch_item_details(1))
-    # await revoke_tokens()
-    # await authenticate()
-    # await print(fetch_item_details(1))
+#     await authenticate()
+#     print(await fetch_item_details(1))
+#     # await revoke_tokens()
+#     # await authenticate()
+#     # await print(fetch_item_details(1))
 
 
 
-asyncio.run(main())
+# asyncio.run(main())

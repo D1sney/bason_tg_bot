@@ -9,10 +9,9 @@ from filters.chat_filters import ManagerChatFilter
 from handlers.manager_handlers import manager_router
 from handlers.warehouse_handlers import warehouse_router
 from handlers.issuance_handler import issuing_router
-
 # Загружаем переменные окружения
-load_dotenv()
-TOKEN = os.getenv("BOT_TOKEN")
+from config import TOKEN
+
 
 # Включаем логирование
 logging.basicConfig(level=logging.INFO)
@@ -34,6 +33,12 @@ async def set_bot_commands(bot: Bot):
         BotCommand(command="help", description="Помощь"),
     ]
     await bot.set_my_commands(commands)
+
+# @dp.message()
+# async def get_ids(message):
+#     chat_id = message.chat.id
+#     thread_id = message.message_thread_id or "Нет темы"
+#     await message.answer(f"Chat ID: {chat_id}, Thread ID: {thread_id}")
 
 async def main():
     logging.info("Запуск бота...")
