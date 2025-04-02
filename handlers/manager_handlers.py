@@ -4,8 +4,8 @@ from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from filters.chat_filters import ManagerChatFilter
-from services.api_service import get_item_info
-from config import WAREHOUSE_CHAT_ID
+from services.api_service import send_to_warehouse_chat
+from config import WAREHOUSE_CHAT_ID, MANAGER_CHAT_ID
 
 # Создаем роутер
 manager_router = Router()
@@ -56,21 +56,6 @@ async def cancel_article_input(message: Message, state: FSMContext):
     await state.set_state(ManagerStates.choose_action)
     await message.answer("Ввод артикула отменен.", reply_markup=action_keyboard)
 
-
-# Отправка сообщения в складской чат
-async def send_to_warehouse_chat(message, warehouse_chat_id: int, item_id: int, action: str):
-    """Отправляет информацию о товаре в складской чат."""
-    # item_info = get_item_info(item_id)
-    # if item_info:
-    #     message_text = (f"Запрос: {action}\n"
-    #                     f"Артикул: {item_info['article']}\n"
-    #                     f"Секция: {item_info['section']}")
-    #     await message.bot.send_photo(warehouse_chat_id, item_info['photo_url'], caption=message_text)
-    # else:
-    #     await message.bot.send_message(warehouse_chat_id, "Ошибка: не удалось получить информацию о товаре.")
-    """Временное решение пока не понятки с API"""
-    await message.bot.send_message(warehouse_chat_id, f'Запрос: {action}\nАртикул: {item_id}\n', reply_markup=warehouse_keyboard)
-
 # Обработчик ввода артикула
 @manager_router.message(ManagerStates.enter_article)
 async def enter_article(message: Message, state: FSMContext):
@@ -84,6 +69,12 @@ async def enter_article(message: Message, state: FSMContext):
         await message.answer(f"Ваш запрос: {action} для артикула {article}. Отправляем данные...")
         await message.answer("Выберите действие:", reply_markup=action_keyboard)
         # Отправка сообщения в складской чат
-        await send_to_warehouse_chat(message, WAREHOUSE_CHAT_ID, article, action)
+        await send_to_warehouse_chat(message, WAREHOUSE_CHAT_ID, MANAGER_CHAT_ID, article, action, warehouse_keyboard)
     else:
         await message.answer("Артикул введен с ошибкой. Попробуйте снова.")
+
+# Обработчик команды /start
+@manager_router.message()
+async def cmd_start(message: Message, state: FSMContext):
+    await state.set_state(ManagerStates.choose_action)
+    await message.answer("Выберите действие:", reply_markup=action_keyboard)

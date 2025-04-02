@@ -34,16 +34,12 @@ async def set_bot_commands(bot: Bot):
     ]
     await bot.set_my_commands(commands)
 
-# @dp.message()
-# async def get_ids(message):
-#     chat_id = message.chat.id
-#     thread_id = message.message_thread_id or "Нет темы"
-#     await message.answer(f"Chat ID: {chat_id}, Thread ID: {thread_id}")
 
 async def main():
     logging.info("Запуск бота...")
     await set_bot_commands(bot)
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

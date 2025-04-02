@@ -13,7 +13,6 @@ issuing_keyboard = InlineKeyboardMarkup(
     ]
 )
 
-
 # Обработчик inline-кнопок в складском чате
 @warehouse_router.callback_query(F.data.in_({"warehouse_yes", "warehouse_no"}))
 async def warehouse_response(callback: CallbackQuery):
